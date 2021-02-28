@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
@@ -20,8 +21,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/catalog")
 public class MovieCatalogResource {
 
+//    @Autowired
+//    private RestTemplate restTemplate;//calling a bean instances
+
     @Autowired
-    private RestTemplate restTemplate;//calling a bean instances
+    private WebClient.Builder webClientBuilder;
 
     @RequestMapping("/{userId}")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
@@ -31,7 +35,7 @@ public class MovieCatalogResource {
 //        RestTemplate restTemplate=new RestTemplate();
 
         List<Rating> ratings=Arrays.asList(
-                new Rating("1234",4),//Some buddy came and ask for movies a usser has watched,for now just think this is the data we received from rating-data-service  api,we hardcoded it
+                new Rating("1234",4),//Some buddy came and ask for movies a user has watched,for now just think this is the data we received from rating-data-service  api,we hardcoded it
                 new Rating("5678",3)
         );
 
@@ -41,7 +45,14 @@ public class MovieCatalogResource {
         return ratings.stream().map(
                 rating->{
 
-                    Movie movie=restTemplate.getForObject("http://localhost:8082/movies/"+rating.getMovieId(),Movie.class);
+                   // Movie movie=restTemplate.getForObject("http://localhost:8082/movies/"+rating.getMovieId(),Movie.class);
+
+                   Movie movie= webClientBuilder.build()
+                                    .get()
+                                    .uri("http://localhost:8082/movies/"+rating.getMovieId())
+                                    .retrieve()
+                                    .bodyToMono(Movie.class)
+                                    .block();
                     return  new CatalogItem(movie.getName(),"Desc",rating.getRating());
                 }).collect(Collectors.toList());
 
