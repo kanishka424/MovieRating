@@ -4,6 +4,7 @@ package io.fluffy.moviecatalogservice.reosources;
 import io.fluffy.moviecatalogservice.model.CatalogItem;
 import io.fluffy.moviecatalogservice.model.Movie;
 import io.fluffy.moviecatalogservice.model.Rating;
+import io.fluffy.moviecatalogservice.model.UserRating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,11 +22,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/catalog")
 public class MovieCatalogResource {
 
-//    @Autowired
-//    private RestTemplate restTemplate;//calling a bean instances
-
     @Autowired
-    private WebClient.Builder webClientBuilder;
+    private RestTemplate restTemplate;//calling a bean instances
+
+//    @Autowired
+//    private WebClient.Builder webClientBuilder;
 
     @RequestMapping("/{userId}")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
@@ -34,25 +35,14 @@ public class MovieCatalogResource {
 
 //        RestTemplate restTemplate=new RestTemplate();
 
-        List<Rating> ratings=Arrays.asList(
-                new Rating("1234",4),//Some buddy came and ask for movies a user has watched,for now just think this is the data we received from rating-data-service  api,we hardcoded it
-                new Rating("5678",3)
-        );
+        UserRating ratings=restTemplate.getForObject("http://localhost:8083/ratingsdata/users/"+userId, UserRating.class);
 
-
-
-
-        return ratings.stream().map(
+        return ratings.userRating.stream().map(
                 rating->{
 
-                   // Movie movie=restTemplate.getForObject("http://localhost:8082/movies/"+rating.getMovieId(),Movie.class);
+                    Movie movie=restTemplate.getForObject("http://localhost:8082/movies/"+rating.getMovieId(),Movie.class);
 
-                   Movie movie= webClientBuilder.build()
-                                    .get()
-                                    .uri("http://localhost:8082/movies/"+rating.getMovieId())
-                                    .retrieve()
-                                    .bodyToMono(Movie.class)
-                                    .block();
+
                     return  new CatalogItem(movie.getName(),"Desc",rating.getRating());
                 }).collect(Collectors.toList());
 
