@@ -22,8 +22,8 @@ public class RatingsResource {
     @RequestMapping("/users/{userId}")
     public UserRating  getUserRating(@PathVariable String userId){
         List<Rating> ratings= Arrays.asList(
-                new Rating("1234",4),//Some buddy came and ask for movies a user has watched,for now just think this is the data we received from rating-data-service  api,we hardcoded it
-                new Rating("5678",3)
+                new Rating("550",4),//Some buddy came and ask for movies a user has watched,for now just think this is the data we received from rating-data-service  api,we hardcoded it
+                new Rating("100",3)
         );
 
         UserRating userRating=new UserRating();//we don't return a list we will wrap around an object and send the list
